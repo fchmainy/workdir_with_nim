@@ -1,0 +1,6 @@
+upstream {{ server_name.replace(".", "_") }} {
+{% set server_list = servers.split(";") %}
+{% for server in server_list %}
+	server {{ server }};
+{% endfor %}
+}
