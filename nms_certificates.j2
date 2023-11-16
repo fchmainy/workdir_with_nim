@@ -1,0 +1,21 @@
+{
+  "certAssignmentDetails": [
+    {
+      "assignedKeyPaths": [
+        {
+          "cert": "/etc/nginx/ssl/{{ server_name.replace(".","_") }}.pem",
+          "key": "/etc/nginx/ssl/{{ server_name.replace(".","_") }}.key"
+        }
+      ],
+      "configKeyPaths": [],
+      "type": "Instance"
+    }
+  ],
+  "certPEMDetails": {
+    "password": "",
+    "privateKey": "{{ key_oneliner.stdout }}",
+    "publicCert": "{{ cert_oneliner.stdout }}",
+    "type": "PEM"
+  },
+  "name": "{{ server_name.replace(".","_") }}_certs"
+}
