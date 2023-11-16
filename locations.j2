@@ -1,0 +1,6 @@
+location / {
+	access_log /var/log/{{ server_name.replace(".", "_") }}_access.log;
+	error_log /var/log/{{ server_name.replace(".", "_") }}_error.log warn;
+
+	proxy_pass http://{{ server_name.replace(".", "_") }};
+}
