@@ -51,22 +51,20 @@
       template:
         src: ../templates/upstreams.j2
         dest: ../instance-group/_etc_nginx_conf.d_includes_upstreams_{{ server_name }}.conf
-    - name: create json config file inputs
-      set_fact:
-         config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
-      with_items:
-         - "{{'./instance-group/*.html' | fileglob}}"
-         - "{{'./instance-group/*.conf' | fileglob}}"
+#    - name: create json config file inputs
+#      set_fact:
+#         config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
+#      with_items:
+#         - "{{'./instance-group/*.html' | fileglob}}"
+#         - "{{'./instance-group/*.conf' | fileglob}}"
     - name: create 2nd json config file inputs
       set_fact:
-         config_map2: '{{ config_map2|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
+         config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
       with_fileglob:
-         - "./instance-group/*.html"
-         - "./instance-group/*.conf"
+         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.html"
+         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.conf"
     - debug:
          var: config_map
-    - debug:
-         var: config_map2
     - name: Create config.json
       template:
          src: ../templates/config.j2
