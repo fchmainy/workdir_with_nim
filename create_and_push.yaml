@@ -2,7 +2,7 @@
 - name: Convert OpenAPI to Nginx
   hosts: localhost
   vars_files:
-    - web.api.yml
+#    - web.api.yml
   vars:
     server_name: api.f5demo.com
   gather_facts: false
@@ -23,14 +23,13 @@
         dest: ./_etc_nginx_conf.d_includes_upstreams_{{ server_name }}.conf
     - name: create json config file inputs
       set_fact:
-         config_map: '{{ config_map|default({})|
-         combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
-       with_fileglob:
-               - "./*.html"
-               - "./*.conf"
-     - debug:
+         config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
+      with_fileglob:
+         - "./*.html"
+         - "./*.conf"
+    - debug:
          var: config_map
-     - name: Create config.json
-       template:
+    - name: Create config.json
+      template:
          src: ./config.j2
          dest: '/tmp/config.json'
