@@ -11,16 +11,16 @@
   tasks:
     - name: Create nginx configuration main file
       template:
-        src: ./main.j2
-        dest: ./_etc_nginx_conf.d_{{ server_name }}.conf
+        src: ../templates/main.j2
+        dest: ../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf
     - name: Create locations file
       template:
-        src: ./locations.j2
-        dest: ./_etc_nginx_conf.d_includes_locations_{{ server_name }}.conf
+        src: ../templates/locations.j2
+        dest: ../_etc_nginx_conf.d_includes_locations_{{ server_name }}.conf
     - name: Create upstreams file
       template:
-        src: ./upstreams.j2
-        dest: ./_etc_nginx_conf.d_includes_upstreams_{{ server_name }}.conf
+        src: ../templates/upstreams.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_upstreams_{{ server_name }}.conf
     - name: create json config file inputs
       set_fact:
          config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
@@ -31,5 +31,5 @@
          var: config_map
     - name: Create config.json
       template:
-         src: ./config.j2
-         dest: '/tmp/config.json'
+         src: ../templates/config.j2
+         dest: ../instance-group/config.json
