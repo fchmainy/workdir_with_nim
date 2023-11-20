@@ -38,7 +38,7 @@
     - name: Create SSL file
       template:
         src: ../templates/ssl_configuration.j2
-        dest: ../_etc_nginx_conf.d_includes_{{ server_name }}-ssl/default.conf
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}-ssl_default.conf
     - name: Create nginx configuration main file
       template:
         src: ../templates/main.j2
