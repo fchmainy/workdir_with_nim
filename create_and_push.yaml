@@ -46,7 +46,7 @@
     - name: Create locations file
       template:
         src: ../templates/locations.j2
-        dest: ../_etc_nginx_conf.d_includes_locations_{{ server_name }}.conf
+        dest: ../instance-group/_etc_nginx_conf.d_includes_locations_{{ server_name }}.conf
     - name: Create upstreams file
       template:
         src: ../templates/upstreams.j2
@@ -55,8 +55,8 @@
       set_fact:
          config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
       with_fileglob:
-         - "./*.html"
-         - "./*.conf"
+         - "./instance-group/*.html"
+         - "./instance-group/*.conf"
     - debug:
          var: config_map
     - name: Create config.json
