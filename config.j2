@@ -1,0 +1,21 @@
+{
+    "auxFiles": {
+        "files": [
+            {
+                "contents": "eyJwcmVjb21waWxlZFB1YmxpY2F0aW9uIjp0cnVlfQ==",
+                "name": "/etc/nms/app_protect_metadata.json"
+            }
+        ],
+        "rootDir": "/"
+    },
+    "configFiles": {
+        "files": [
+			{% for key, value in config_map.items() %}
+				{
+					"name": "{{ key }}",
+					"contents": "{{ value }}"
+				}{% if not loop.last %},{% endif %}
+			{% endfor %}
+		]
+	}
+}
