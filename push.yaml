@@ -23,6 +23,8 @@
       template:
          src: ../templates/config.j2
          dest: ../instance-group/config.json
+    - debug:
+         msg: "{{ lookup('file','../instance-group/config.json') | to_json }}"
     - name: push config.json to instance-group
       uri:
               url: 'https://{{ nms_host }}{{ nms_api_basepath }}/instance-groups/{{ instance_group_id }}/config'
