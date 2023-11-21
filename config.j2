@@ -17,5 +17,10 @@
 				}{% if not loop.last %},{% endif %}
 			{% endfor %}
 		]
-	}
+	},
+  "externalId": "{{ commitHash }}",
+  "externalIdType": "git",
+  "updateTime": "{{ currentDate }}",
+  "ignoreConflict": true,
+  "validateConfig": true
 }
