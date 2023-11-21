@@ -35,7 +35,7 @@
               headers:
                 Accept: "application/json"
                 Content-Type: "application/json"
-              body: "{{ lookup('file','../instance-group/config.json') | to_json }}"
+              body: "{{ lookup('file','../instance-group/config.json') }}"
               status_code: 202
               validate_certs: false
               return_content: true
