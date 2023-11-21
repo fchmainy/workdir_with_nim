@@ -1,0 +1,28 @@
+---
+- name: Push configuration to NIM Instance Group
+  hosts: localhost
+  connection: local
+  vars:
+    allow_world_readable_tmpfiles: true
+    nms_host: "10.1.1.7"
+    nms_api_basepath: "/api/platform/v1"
+    instance_group_name: "nginx-demo"
+    instance_group_id: "dbbcd6ec-1581-4d35-8b40-ad6c94a35ca2"
+  gather_facts: false
+
+  tasks:
+    - name: push config.json to instance-group
+      uri:
+              url: 'https://{{ nms_host }}{{ nms_api_basepath }}/instance-groups/{{ instance_group_id }}/config'
+              user: '{{ nms_user }}'
+              password: '{{ nms_password }}'
+              method: POST
+              force_basic_auth: true
+              headers:
+                Accept: "application/json"
+                Content-Type: "application/json"
+              body: "{{ lookup('file','config.json') | to_json }}"
+              status_code: 202
+              validate_certs: false
+              return_content: true
+      register: result
