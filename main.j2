@@ -5,7 +5,6 @@ server {
 }
 
 server {
-        listen 443 ssl;
         server_name {{ server_name }};
 
         include includes/{{ server_name }}-ssl/*.conf;
