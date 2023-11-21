@@ -11,6 +11,18 @@
   gather_facts: false
 
   tasks:
+    - name: create 2nd json config file inputs
+      set_fact:
+         config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
+      with_fileglob:
+         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.html"
+         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.conf"
+    - debug:
+         var: config_map
+    - name: Create config.json
+      template:
+         src: ../templates/config.j2
+         dest: ../instance-group/config.json
     - name: push config.json to instance-group
       uri:
               url: 'https://{{ nms_host }}{{ nms_api_basepath }}/instance-groups/{{ instance_group_id }}/config'
