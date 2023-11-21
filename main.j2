@@ -7,10 +7,8 @@ server {
 server {
         server_name {{ server_name }};
 
-        include includes/{{ server_name }}-ssl/*.conf;
-
-        include includes/{{ server_name }}-locations/*.conf;
-        include includes/{{ server_name }}-errors/*.conf;
-
+        include includes/{{ server_name }}/ssl/*.conf;
+        include includes/{{ server_name }}/locations/*.conf;
+        include includes/{{ server_name }}/errors/*.conf;
 }
 include includes/{{ server_name }}_upstreams/*.conf;
