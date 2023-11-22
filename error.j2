@@ -1,0 +1,6 @@
+error_page {{ errorcode }} /{{ errorCode }}.html;
+
+location /{{ errorCode }}.html {
+  root /etc/nginx/conf.d/include/{{ appName }}/errors/{{ errorCode }}.html;
+  internal;
+}
