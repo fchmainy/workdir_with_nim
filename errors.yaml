@@ -1,0 +1,21 @@
+---
+- name: Create Custom Error Pages
+  hosts: localhost
+
+  vars:
+    allow_world_readable_tmpfiles: true
+    appName: ""
+    errorCode: ""
+    errorPage: ""
+  gather_facts: false
+
+
+  tasks:
+    - name: Create custom error configuration file
+      template:
+        src: ../templates/error.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_errors_{{ errorCode }}.conf
+    - name: Create custom error delivery page
+      copy:
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_errors_{{ errorCode }}.html
+        content: {{ errorPage }}
