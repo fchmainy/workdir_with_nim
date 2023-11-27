@@ -22,7 +22,7 @@
     - name: Create config.json
       template:
          src: ../templates/config.j2
-         dest: ../history/config.json
+         dest: "../history/config_{{ commitHash }}.json"
 
     - name: push config.json to instance-group
       uri:
