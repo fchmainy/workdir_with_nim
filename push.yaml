@@ -15,14 +15,14 @@
       set_fact:
          config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
       with_fileglob:
-         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.html"
-         - "/var/lib/jenkins/workspace/yahooJP/instance-group/*.conf"
+         - "/var/lib/jenkins/workspace/Create/instance-group/*.html"
+         - "/var/lib/jenkins/workspace/Create/instance-group/*.conf"
     - debug:
          var: config_map
     - name: Create config.json
       template:
          src: ../templates/config.j2
-         dest: ../instance-group/config.json
+         dest: ../history/config.json
 
     - name: push config.json to instance-group
       uri:
@@ -34,7 +34,7 @@
               headers:
                 Accept: "application/json"
                 Content-Type: "application/json"
-              body: "{{ lookup('file','../instance-group/config.json') }}"
+              body: "{{ lookup('file','../history/config_' + commit_hash + '.json') }}"
               body_format: json
               status_code: 202
               validate_certs: false
