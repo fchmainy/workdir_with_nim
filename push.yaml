@@ -8,7 +8,7 @@
     nms_api_basepath: "/api/platform/v1"
     instance_group_name: "nginx-demo"
     instance_group_id: "dbbcd6ec-1581-4d35-8b40-ad6c94a35ca2"
-    workspace: "Create"
+    workspace: "/var/lib/jenkins/workspace/Create"
   gather_facts: false
 
   tasks:
@@ -16,8 +16,8 @@
       set_fact:
          config_map: '{{ config_map|default({})|combine({item|basename|replace("_","/"): lookup("file", item)|b64encode}) }}'
       with_fileglob:
-         - "/var/lib/jenkins/{{ workspace }}/Create/instance-group/*.html"
-         - "/var/lib/jenkins/{{ workspace }}/Create/instance-group/*.conf"
+         - "{{ workspace }}/instance-group/*.html"
+         - "{{ workspace }}/instance-group/*.conf"
     - debug:
          var: config_map
     - name: Create config.json
