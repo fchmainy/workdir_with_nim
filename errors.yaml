@@ -18,4 +18,4 @@
     - name: Create custom error delivery page
       copy:
         dest: "../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_errors_{{ errorCode }}.html"
-        content: {{ errorPage }}
+        content: "{{ errorPage }}"
