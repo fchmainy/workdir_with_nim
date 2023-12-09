@@ -1,5 +1,5 @@
 {% for location in paths -%}
-    location {{ basepath }}{{ location|replace("{id}", "*") }} {
+    location {{ base_path }}{{ location|replace("{id}", "*") }} {
         access_log /var/log{{ location|replace("/{id}", "_id") }}_access.log;
         error_log /var/log{{ location|replace("/{id}", "_id") }}_error.log warn;
         {% set allowed_methods = [] %} {% set islocal = namespace () %} {% set islocal.state = false %} {% set islocal.upstreams = "" %}
