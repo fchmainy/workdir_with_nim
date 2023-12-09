@@ -1,0 +1,109 @@
+---
+- name: Convert OpenAPI to Nginx
+  hosts: localhost
+  vars_files:
+#    - web.api.yml
+  vars:
+    server_name: ""
+    raw_oas_url: ""
+    allow_world_readable_tmpfiles: true
+    nms_host: "10.1.1.7"
+    nms_api_basepath: "/api/platform/v1"
+    secure: false
+    certName: "dummy_test2_f5demo_com_certs"
+  gather_facts: false
+
+
+  tasks:
+  # 1. Init: Get and parse content
+    - name: pull OpenAPI Spec file
+      uri:
+        url: '{{ raw_oas_url }}'
+        return_content: yes
+      register: oas
+
+    - name: get content
+      set_fact:
+        oas_content: '{{ oas.content | from_yaml }}'
+
+    - name: parse content
+      set_fact:
+        infos: '{{ oas_content.info }}'
+        paths: '{{ oas_content.paths }}'
+        servers: '{{ oas_content.servers }}'
+
+# 2. SSL Processing
+    - name: get the certificate details
+      uri:
+              url: 'https://{{ nms_host }}{{ nms_api_basepath }}/certs'
+              user: '{{ nms_user }}'
+              password: '{{ nms_password }}'
+              method: GET
+              force_basic_auth: true
+              status_code: 200, 201
+              validate_certs: false
+              return_content: true
+      register: result
+
+    - name: get certificate path
+      set_fact:
+              certPath: "{{ result.json | json_query(query) }}"
+      vars:
+              query: "items[? name == '{{ certName }}'].certAssignmentDetails[0].assignedKeyPaths[0].cert"
+    - name: get key path
+      set_fact:
+              keyPath: "{{ result.json | json_query(query) }}"
+      vars:
+              query: "items[? name == '{{ certName }}'].certAssignmentDetails[0].assignedKeyPaths[0].key"
+    - name: Create SSL file
+      template:
+        src: ../templates/ssl_configuration.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_ssl_default.conf
+
+# 3. Template Processing 
+    - name: Create nginx configuration main file
+      template:
+        src: ../templates/main_api.j2
+        dest: ../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf
+    - name: Create locations file
+      template:
+        src: ../templates/locations_api.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_locations_default.conf
+    - name: Create upstreams file
+      template:
+        src: ../templates/upstreams_api.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_default.conf
+    - name: Create path specific upstreams files
+      template:
+        src: ../templates/upstreams_path_level_api.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ items }}.conf
+      with_items: "{{ paths }}"
+
+# 4. NAP Policy if "secure" flag is set
+    - name:  Create App Protect Policy if the secure variable is set
+      set_fact:
+        nap_policy: ../templates/nap_api.j2
+      when: secure
+      
+    - name: POST NAP Policy to NIM
+      uri:
+              url: 'https://{{ nms_host }}{{ nms_api_basepath }}/security/policies?isNewRevision=false'
+              user: '{{ nms_user }}'
+              password: '{{ nms_password }}'
+              method: POST
+              force_basic_auth: true
+              headers:
+                Accept: "application/json"
+                Content-Type: "application/json"
+              body:
+                metadata:
+                  description: "App Protect Policy created by Ansible"
+                  displayName: "{{ server_name }} {{ infos.version }} App Protect Policy"
+                  name: "{{ server_name }}_{{ infos.version }}_nap"
+                content: "{{ nap_policy | b64encode }}"
+              body_format: json
+              status_code: 201
+              validate_certs: false
+              return_content: true
+      register: result_nap
+      when: secure
