@@ -1,0 +1,19 @@
+{% for location in paths -%}
+    location {{ basepath }}{{ location|replace("{id}", "*") }} {
+        access_log /var/log{{ location|replace("/{id}", "_id") }}_access.log;
+        error_log /var/log{{ location|replace("/{id}", "_id") }}_error.log warn;
+        {% set allowed_methods = [] %} {% set islocal = namespace () %} {% set islocal.state = false %} {% set islocal.upstreams = "" %}
+        {% for method in paths[location] -%}
+            {{ allowed_methods.append(method) }}
+            {%- if method.servers is defined -%}
+                {% set islocal.state = true %}
+            {% endif %}
+        {% endfor %}
+        limit_except {{ allowed_methods|join(' ') }} { deny all; }
+        {% if islocal.state %}
+            proxy_pass http://{{ location.replace("/","") | replace("{id}", "prefix") }}_{{ server_name.replace(".", "_") }};
+        {% else %}
+            proxy_pass http://{{ server_name.replace(".", "_") }};
+        {% endif %}
+        }
+{% endfor %}
