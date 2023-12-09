@@ -1,0 +1,5 @@
+upstream {{ server_name.replace(".", "_") }} {
+{% for server in servers %}
+	server {{ server.url.replace("http://", "") | split('/') | first}};
+{% endfor %}
+}
