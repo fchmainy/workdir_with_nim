@@ -1,0 +1,32 @@
+server {
+        listen 80;
+
+        if ($scheme != "https") {
+                return 301 https://$host$request_uri;
+        }
+       
+        server_name {{ server_name }};
+
+        set requestedVersion $http_api_version;
+
+        # Set default API version
+        if ($requestedVersion = '') {
+            set $requestedVersion 1;
+        }
+
+        {% if secure -%}
+            app_protect_enable on;
+            app_protect_policy_file "/etc/app_protect/conf/{{ server_name.replace(".", "-") }}_{{ oas_content.info.version }}_nap.tgz";
+            app_protect_security_log_enable on;
+            app_protect_security_log "/etc/app_protect/conf/log_blocked.tgz" syslog:server=127.0.0.1:514;
+        {% endif %}
+
+        location ~* ^/? {
+            rewrite .* /$requestedVersion$request_uri redirect;
+        }
+
+        include includes/{{ server_name }}/{{ oas_content.info.version }}/ssl/*.conf;
+        include includes/{{ server_name }}/{{ oas_content.info.version }}/locations/*.conf;
+        include includes/{{ server_name }}/_{{ oas_content.info.version }}/errors/*.conf;
+}
+include includes/{{ server_name }}/{{ oas_content.info.version }}/upstreams/*.conf;
