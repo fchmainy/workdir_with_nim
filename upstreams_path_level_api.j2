@@ -1,0 +1,12 @@
+{% for location in paths -%}
+    {% for method in paths[location] -%}
+            {%- if method.servers is defined -%}
+                upstream {{ location.replace("/","") | replace("{id}", "prefix") }}_{{ server_name.replace(".", "_") }} {
+                    {%- for url in method.servers.url -%}
+                        server {{ url.replace("http://", "") | split('/') | first}};
+                    {% endfor %}
+                }
+            {% endif %}
+        {% endfor %}
+
+{% endfor %}
