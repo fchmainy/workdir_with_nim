@@ -11,7 +11,7 @@ server {
 
         # Set default API version
         if ($requestedVersion = '') {
-            set $requestedVersion 1;
+            set $requestedVersion "{{ active_version }}";
         }
 
         {% if secure -%}
@@ -27,6 +27,6 @@ server {
 
         include includes/{{ server_name }}/{{ oas_content.info.version }}/ssl/*.conf;
         include includes/{{ server_name }}/{{ oas_content.info.version }}/locations/*.conf;
-        include includes/{{ server_name }}/{{ oas_content.info.version }}/errors/*.conf;
+        include includes/{{ server_name }}/_{{ oas_content.info.version }}/errors/*.conf;
 }
 include includes/{{ server_name }}/{{ oas_content.info.version }}/upstreams/*.conf;
