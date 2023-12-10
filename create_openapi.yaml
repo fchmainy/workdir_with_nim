@@ -86,7 +86,7 @@
 # 3. Template Processing 
 
     - name: Remove any past occurence of the API configurations if new version is o enforce
-      shell: /bin/rm ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
+      shell: /bin/rm -fr ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
       when: enforce
 
     - name: Create nginx configuration main file
