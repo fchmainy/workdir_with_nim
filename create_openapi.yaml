@@ -141,11 +141,11 @@
 # 5. Maintain JSON Document
     - name: update api version JSON document
       set_fact:
-        api_versions: "{{ api_versions | default([]) | combine({ "name": "{{ server_name }}", "versions": ["{{ infos.version }}"], "active": "{{ infos.version }}" }) }}"
+        api_versions: "{{ api_versions | default([]) | combine({ 'name: '{{ server_name }}', 'versions': ['{{ infos.version }}'], 'active': '{{ infos.version }}' }) }}"
       when: enforce
 
     
     - name: update api version JSON document
       set_fact:
-        api_versions: "{{ api_versions | default([]) | combine({ "name": "{{ server_name }}", "versions": ["{{ infos.version }}"], "active": "{{ infos.version }}" }) }}"
+        api_versions: "{{ api_versions | default([]) | combine({ 'name: '{{ server_name }}', 'versions': ['{{ infos.version }}'], 'active': '{{ infos.version }}' }) }}"
       when: not enforce
