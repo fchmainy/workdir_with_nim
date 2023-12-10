@@ -104,7 +104,7 @@
     - name: Create path specific upstreams files
       template:
         src: ../templates/upstreams_path_level_api.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ items }}.conf
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ item }}.conf
       with_items: "{{ paths }}"
 
 
