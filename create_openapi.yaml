@@ -11,6 +11,7 @@
     nms_api_basepath: "/api/platform/v1"
     secure: false
     certName: "dummy_test2_f5demo_com_certs"
+    enforce: ""
   gather_facts: false
 
 
@@ -31,6 +32,28 @@
         infos: '{{ oas_content.info }}'
         paths: '{{ oas_content.paths }}'
         servers: '{{ oas_content.servers }}'
+    
+    - name: load versions
+      include_vars:
+        file: ../history/api_versions.json
+        name: api_versions
+
+    - name: get current active api version if not enforce - i.e. test only
+      set_fact:
+        active_version: "{{ api_versions | json_query(query) | first}}"
+      vars:
+        query: "apis[? name == '{{ server_name }}'].active[0]"
+      when: not enforce
+
+    - name: get api version if enforce
+      set_fact:
+        active_version: "{{ infos.version }}"
+      when: enforce
+
+#    - name: check if api version is the active
+#      set_fact:
+#        is_active: "{% if infos.version == active_version %}"true{% else  %}false{% endif %}
+
 
 # 2. SSL Processing
     - name: get the certificate details
@@ -61,6 +84,11 @@
         dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_ssl_default.conf
 
 # 3. Template Processing 
+
+    - name: Remove any past occurence of the API configurations if new version is o enforce
+      shell: /bin/rm ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
+      when: enforce
+
     - name: Create nginx configuration main file
       template:
         src: ../templates/main_api.j2
@@ -78,6 +106,7 @@
         src: ../templates/upstreams_path_level_api.j2
         dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ items }}.conf
       with_items: "{{ paths }}"
+
 
 # 4. NAP Policy if "secure" flag is set
     - name:  Create App Protect Policy if the secure variable is set
@@ -107,3 +136,16 @@
               return_content: true
       register: result_nap
       when: secure
+
+
+# 5. Maintain JSON Document
+    - name: update api version JSON document
+      set_fact:
+        api_versions: "{{ api_versions | default([]) | combine({ "name": "{{ server_name }}", "versions": ["{{ infos.version }}"], "active": "{{ infos.version }}" }) }}"
+      when: enforce
+
+    
+    - name: update api version JSON document
+      set_fact:
+        api_versions: "{{ api_versions | default([]) | combine({ "name": "{{ server_name }}", "versions": ["{{ infos.version }}"], "active": "{{ infos.version }}" }) }}"
+      when: not enforce
