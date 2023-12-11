@@ -114,7 +114,7 @@
       template:
         src: ../templates/upstreams_path_level_api.j2
         dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ item.keys() }}.conf
-      with_items: "{{ pathsServers }}"
+      with_items: "{{ pathServers }}"
       when:
         - "{{ paths }}"
 
