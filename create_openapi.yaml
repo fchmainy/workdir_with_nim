@@ -101,11 +101,22 @@
       template:
         src: ../templates/upstreams_api.j2
         dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_default.conf
+
+    - name: is there any location where we have path specific servers?
+      set_fact:
+        pathServers: "{ \"{{ item }}\": {{ paths[item]['get']['servers'] }} }"
+      with_items:
+        - "{{ paths.keys() }}"
+      when:
+        - "{{ paths[item]['get']['servers'] is defined }} or {{ paths[item]['post']['servers'] is defined }}"
+
     - name: Create path specific upstreams files
       template:
         src: ../templates/upstreams_path_level_api.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ item }}.conf
-      with_items: "{{ paths }}"
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_{{ item.keys() }}.conf
+      with_items: "{{ pathsServers }}"
+      when:
+        - "{{ paths }}"
 
 
 # 4. NAP Policy if "secure" flag is set
