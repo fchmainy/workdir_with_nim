@@ -13,6 +13,7 @@
     certName: "dummy_test2_f5demo_com_certs"
     apply: ""
     pathServers: []
+    workspace: "openAPItoNIM"
   gather_facts: false
 
 
@@ -87,7 +88,7 @@
 # 3. Template Processing 
 
     - name: Remove any past occurence of the API configurations if new version is o enforce
-      shell: /bin/rm ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
+      shell: /bin/rm {{ workspace }}/instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
       when: enforce
 
     - name: Create nginx configuration main file
