@@ -1,5 +1,4 @@
-upstream {{ item.keys().replace("/","") | replace("{id}", "prefix") }}_{{ server_name.replace(".", "_") }} {
-{%- for url in item.values() -%}
-    server {{ url.replace("http://", "") | split('/') | first}};
+{%- for url in item.servers -%}
+	server {{ url.url.replace("https://", "") | split('/') | first }};
 {% endfor %}
 }
