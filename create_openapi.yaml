@@ -82,27 +82,28 @@
               query: "items[? name == '{{ certName }}'].certAssignmentDetails[0].assignedKeyPaths[0].key"
     - name: Create SSL file
       template:
-        src: ../templates/ssl_configuration.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_ssl_default.conf
+        src: "../templates/ssl_configuration.j2"
+        dest: "../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_ssl_default.conf"
 
 # 3. Template Processing 
 
     - name: Remove any past occurence of the API configurations if new version is o enforce
       shell: /bin/rm {{ workspace }}/instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_*.conf
       when: enforce
+      ignore_errors: True
 
     - name: Create nginx configuration main file
       template:
-        src: ../templates/main_api.j2
-        dest: ../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf
+        src: "../templates/main_api.j2"
+        dest: "../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf"
     - name: Create locations file
       template:
-        src: ../templates/locations_api.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_locations_default.conf
+        src: "../templates/locations_api.j2"
+        dest: "../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_locations_default.conf"
     - name: Create upstreams file
       template:
-        src: ../templates/upstreams_api.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_default.conf
+        src: "../templates/upstreams_api.j2"
+        dest: "../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ infos.version }}_upstreams_default.conf"
 
 
     - name: is there any location where we have path specific servers?
