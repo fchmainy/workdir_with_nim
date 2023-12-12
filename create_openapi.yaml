@@ -155,15 +155,24 @@
 
 
 # 5. Maintain JSON Document
-    - name: update api version JSON document
-      set_fact:
-        api_versions: "{{ api_versions | default([]) | combine({ 'name: '{{ server_name }}', 'versions': ['{{ infos.version }}'], 'active': '{{ infos.version }}' }) }}"
-      when: enforce
+  - name: load var from file
+    include_vars:
+      file: ../history/config.json
+      name: existing_config
 
-    
-    - name: update api version JSON document
-      set_fact:
-        api_versions: "{{ api_versions | default([]) | combine({ 'name: '{{ server_name }}', 'versions': ['{{ infos.version }}'], 'active': '{{ infos.version }}' }) }}"
-      when: not enforce
+  - debug:
+      var: existing_config
 
-            
+  - name: append more key/values
+    set_fact:
+            existing_config: "{{ existing_config | default([]) | combine({ server_name: infos_version }) }}"
+    when: enforce
+
+  - debug:
+      var: existing_config
+
+  - name: write var to file
+    copy:
+      content: "{{ existing_config | to_nice_json }}"
+      dest: ../hisyory/config.json
+      
