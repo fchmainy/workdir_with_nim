@@ -1,14 +1,6 @@
 {
-  "apis": [
-  {
-    "name": "unexisting.api.f5demo.com",
-    "versions": ["1.0.0", "1.0.1", "1.1.0", "2.0.0"],
-    "active": "2.0.0"
-  },
-  {
-    "name": "fakeapi.f5demo.com",
-    "versions": ["1.0.0"],
-    "active": "1.0.0"
-  }
- ]
+    "demo": "1.0.1",
+    "demo2": "v3",
+    "petstore": "1.0.0",
+    "petstore.f5demo.com": "v5"
 }
