@@ -157,7 +157,7 @@
 # 5. Maintain JSON Document
   - name: load var from file
     include_vars:
-      file: ../history/config.json
+      file: ../history/api_versions.json
       name: existing_config
 
   - debug:
@@ -174,5 +174,5 @@
   - name: write var to file
     copy:
       content: "{{ existing_config | to_nice_json }}"
-      dest: ../hisyory/config.json
+      dest: ../hisyory/api_versions.json
       
