@@ -1,0 +1,29 @@
+---
+- name: Convert OpenAPI to Nginx
+  hosts: localhost
+  vars_files:
+
+  vars:
+    server_name: ""
+    allow_world_readable_tmpfiles: true
+    api_version: ""
+
+  gather_facts: false
+
+
+  tasks:
+    - name: Create HTML index file
+      template:
+        src: ../templates/index.html.j2
+        dest: ../instance-group/_usr_share_nginx_html_{{ server_name }}_{{ api_version }}.html
+        
+    - name: Create nginx configuration main file
+      template:
+        src: ../templates/devportal.j2
+        dest: ../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf
+        
+    - name: Create locations file
+      template:
+        src: ../templates/devportal_locations.j2
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ server_name }}_{{ api_version }}.conf
+
