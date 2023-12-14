@@ -174,5 +174,5 @@
   - name: write var to file
     copy:
       content: "{{ existing_config | to_nice_json }}"
-      dest: ../hisyory/api_versions.json
+      dest: ../history/api_versions.json
       
