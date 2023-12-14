@@ -2,5 +2,6 @@
     "demo": "1.0.1",
     "demo2": "v3",
     "petstore": "1.0.0",
-    "petstore.f5demo.com": "v5"
+    "petstore.f5demo.com": "v5",
+    "this.one.it.works": "v3"
 }
