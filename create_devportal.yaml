@@ -26,5 +26,5 @@
     - name: Create locations file
       template:
         src: ../templates/devportal_location.j2
-        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_{{ server_name }}_{{ api_version }}.conf
+        dest: ../instance-group/_etc_nginx_conf.d_includes_{{ server_name }}_locations_{{ api_version }}.conf
 
