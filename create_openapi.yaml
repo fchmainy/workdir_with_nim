@@ -165,7 +165,7 @@
 
     - name: append more key/values
       set_fact:
-        existing_config: "{{ existing_config | default([]) | combine({ server_name: infos_version }) }}"
+        existing_config: "{{ existing_config | default([]) | combine({ server_name: infos.version }) }}"
       when: enforce
 
     - debug:
