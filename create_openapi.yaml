@@ -175,3 +175,8 @@
       copy:
         content: "{{ existing_config | to_nice_json }}"
         dest: ../history/api_versions.json
+    
+    - name: write current version to file for API Documentation
+      copy:
+        content: "{{ existing_config | to_nice_json }}"
+        dest: ../history/current_api_versions.json
