@@ -19,7 +19,7 @@
         
     - name: Create nginx configuration main file
       template:
-        src: ../templates/devportal.j2
+        src: ../templates/devportal_main.j2
         dest: ../instance-group/_etc_nginx_conf.d_{{ server_name }}.conf
         
     - name: Create locations file
