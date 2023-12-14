@@ -155,24 +155,23 @@
 
 
 # 5. Maintain JSON Document
-  - name: load var from file
-    include_vars:
-      file: ../history/api_versions.json
-      name: existing_config
+    - name: load var from file
+      include_vars:
+        file: ../history/api_versions.json
+        name: existing_config
 
-  - debug:
-      var: existing_config
+    - debug:
+        var: existing_config
 
-  - name: append more key/values
-    set_fact:
-            existing_config: "{{ existing_config | default([]) | combine({ server_name: infos_version }) }}"
-    when: enforce
+    - name: append more key/values
+      set_fact:
+        existing_config: "{{ existing_config | default([]) | combine({ server_name: infos_version }) }}"
+      when: enforce
 
-  - debug:
-      var: existing_config
+    - debug:
+        var: existing_config
 
-  - name: write var to file
-    copy:
-      content: "{{ existing_config | to_nice_json }}"
-      dest: ../history/api_versions.json
-      
+    - name: write var to file
+      copy:
+        content: "{{ existing_config | to_nice_json }}"
+        dest: ../history/api_versions.json
