@@ -1,0 +1,167 @@
+pipeline {
+    agent any
+    
+    environment {
+      DATE = new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("UTC")) 
+      TAG = "${DATE}.${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Get from NIM the Latest Working Configuration for Instance Group') {    
+            steps('Get Instance Group UUID') {
+                script {
+                    INSTANCE_GROUP = params.instance_group
+                    echo INSTANCE_GROUP
+                    INSTANCE_GROUP_UUID = sh(script: 'curl -sk -H "Authorization: Basic YWRtaW46MDludHl2Nzg4dUxCTFFsZ1daTHh3Vll1RFZ4Yk9Y" https://10.1.1.7/api/platform/v1/instance-groups | jq -r ".items[] | select( .name == \\"' + INSTANCE_GROUP + '\\") | .uid"', returnStdout: true)
+                }
+   	        }
+        }
+        
+        stage('Show UUID') {
+            steps('UUID') {
+                echo INSTANCE_GROUP_UUID    
+   	        }
+        }
+
+        stage('Cloning Git') {
+            steps('Checkout') {
+                deleteDir()
+                dir('templates') {
+                    git branch: 'templates', credentialsId: 'github_ssh_key', url: "git@github.com:fchmainy/workdir_with_nim.git"    
+                }
+                dir('engine') {
+                    git branch: 'engine', credentialsId: 'github_ssh_key', url: "git@github.com:fchmainy/workdir_with_nim.git"    
+                }
+                dir('instance-group') {
+                    git branch: INSTANCE_GROUP, credentialsId: 'github_ssh_key', url: "git@github.com:fchmainy/workdir_with_nim.git"    
+                }
+                dir('history') {
+                    git branch: 'config_history', credentialsId: 'github_ssh_key', url: "git@github.com:fchmainy/workdir_with_nim.git"    
+                }
+           	}
+        }
+        
+        
+        stage('Config creation') {
+            steps('Convert Configurations') {
+                withCredentials([usernamePassword(credentialsId: 'nms', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                ansiblePlaybook(
+                    playbook: './engine/create_openapi.yaml',
+                    colorized: true,
+                    inventory: 'hosts.ini',
+                    extras: '-vvv',
+                    extraVars: [
+                        nms_user    : USERNAME,
+                        nms_password : PASSWORD,
+                        server_name : params.server_name,
+                        raw_oas_url : params.raw_oas_url,
+                        secure      : params.secure,
+                        base_path   : params.basepath,
+                        certificate : params.certificate,
+                        enforce     : params.enforce,
+                        workspace   : "${WORKSPACE}"
+                        ]
+                )}
+   	        }
+        }
+        
+        stage('Commit') {
+            steps('Convert Configurations') {
+                dir('instance-group') {
+                     withCredentials([sshUserPrivateKey(credentialsId: 'github_ssh_key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                        withEnv(["GIT_SSH_COMMAND=ssh -i $SSH_KEY -o StrictHostKeyChecking=no"]) {
+                            sh '''
+                            git config user.email "${SSH_USER}"
+                            git add *
+                            git commit -am "${TAG}"
+                            git log --format="%H" -n 1 > commitHash.txt
+                            '''
+                        }
+                    }
+                }
+   	        }
+        }
+        
+        stage('Post on NIM') {
+            steps('Build and push') {
+                dir('instance-group') {
+                    script {
+                        COMMIT_HASH = readFile('commitHash.txt').trim()
+                        IGRP_ID = INSTANCE_GROUP_UUID.trim()
+                        echo IGRP_ID
+                    }
+                    withCredentials([usernamePassword(credentialsId: 'nms', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        ansiblePlaybook(
+                            playbook: '../engine/push.yaml',
+                            colorized: true,
+                            inventory: 'hosts.ini',
+                            extras: '-vvv',
+                            extraVars: [
+                                nms_user            : USERNAME,
+                                nms_password        : PASSWORD,
+                                instance_group_name : INSTANCE_GROUP,
+                                instance_group_id   : IGRP_ID,
+                                currentDate         : DATE,
+                                commitHash          : COMMIT_HASH,
+                                workspace           : "${WORKSPACE}"
+                                ]
+                        )}
+                }
+            }
+        }
+
+        stage('Push hashed configurations for backup on Git') {
+            steps('Push Hashed Configurations') {
+                dir('history') {
+                    script {
+                        COMMIT_HASH = readFile('../instance-group/commitHash.txt').trim()
+                    }                    
+                    withCredentials([sshUserPrivateKey(credentialsId: 'github_deploy_key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                        withEnv(["GIT_SSH_COMMAND=ssh -i $SSH_KEY -o StrictHostKeyChecking=no", "INST_GRP=${INSTANCE_GROUP}"]) {
+                            sh '''
+                            git config user.email "${SSH_USER}"
+                            git add *
+                            git commit -am "${TAG}"
+                            git push origin config_history
+                            '''
+                        }
+                    }
+                }
+   	        }
+        }
+        
+        stage('Push configuration on Git') {
+            steps('Convert Configurations') {
+                dir('instance-group') {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'github_deploy_key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                        withEnv(["GIT_SSH_COMMAND=ssh -i $SSH_KEY -o StrictHostKeyChecking=no", "INST_GRP=${INSTANCE_GROUP}"]) {
+                            sh '''
+                            git push origin "${INST_GRP}"
+                            '''
+                        }
+                    }
+                }
+   	        }
+        }        
+                
+        stage('Create Developer Portal') {
+          steps {
+            script {
+                  try {
+                      current = readJSON file "${WORKSPACE}/history/current_api_versions.json" 
+                  } catch (Exception e) {
+                      Cannot read current_api_versions.json
+                  }
+              }
+             
+            
+            build job: 'CreateAPIDoc/master', parameters: [
+                            string(name: 'instance_group', value:instance_group),
+                            string(name: 'server_name', value:server_name),
+                            string(name: 'api_version', value:current.version),
+                            string(name: 'active', value:active)], wait: false
+          }
+        }  
+       
+    }
+}
